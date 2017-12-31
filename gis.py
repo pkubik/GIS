@@ -203,6 +203,18 @@ def iterate(graph: Graph):
     q = PriorityQueue()
     q.put(initial_node)
 
+    best_by_vertex = {}  # helper dict to avoid pushing redundant nodes
+    def push(node: Node):
+        key = (node.vertex.id, node.allow_residual)
+        if key not in best_by_vertex:
+            best_by_vertex[key] = 2**31
+        current_best = best_by_vertex[key]
+
+        node_score = max(node.path_length, node.max_path_length)
+        if current_best > node_score:
+            q.put(node)
+            best_by_vertex[key] = node_score
+
     current = None
     while not q.empty():
         current = q.get()
@@ -218,7 +230,7 @@ def iterate(graph: Graph):
             if e.source is current.vertex:  # edge is starting at the current vertex
                 if e.available_flow() > 0:  # the edge is free
                     node = current.simple_next_node(e)
-                    q.put(node)
+                    push(node)
                 else:  # the edge is already used by another path
                     not_source = current.vertex is not source  # pointless to go all way back to the source
                     if not_source:  # only source may have `parent == None`
@@ -229,7 +241,7 @@ def iterate(graph: Graph):
                         not_twice = False
                     if not_to_parent and not_twice:
                         node = current.replacing_node(e)
-                        q.put(node)
+                        push(node)
             else:  # edge is ending at the current vertex
                 if e.path_meta is not None:
                     same_path = e.path_meta.pre + 1 == current.path_length  # same path which was switched earlier
@@ -237,7 +249,7 @@ def iterate(graph: Graph):
                     same_path = False
                 not_to_source = e.source is not source  # don't go back to the source
                 if current.allow_residual and same_path and not_to_source:
-                    q.put(current.backward_node(e))
+                    push(current.backward_node(e))
         current = None
 
     if current is not None:
@@ -268,7 +280,10 @@ def main():
 
         (6, 8),  # additional connection
         (8, 9),
-        (9, 10)
+        (9, 10),
+
+        (0, 7),  # bonus connection to check redundant nodes elimination
+        (7, 6)
     ]
 
     # build graph from input
