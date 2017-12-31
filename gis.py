@@ -1,3 +1,4 @@
+from enum import Enum
 from queue import PriorityQueue
 
 
@@ -73,34 +74,43 @@ class Graph:
         edge.path_meta = path_meta
 
 
+class StepType(Enum):
+    NORMAL = 0
+    BACKWARD = 1
+    REPLACE = 2
+
+
 class Node:
     def __init__(self,
                  vertex: Vertex,
                  path_length: int,
                  max_path_length: int,
+                 step_type: StepType,
                  parent: 'Node' = None,
-                 edge_to_update: 'Edge' = None,
+                 edge: 'Edge' = None,
                  allow_residual=False):
         self.vertex = vertex
         self.path_length = path_length
         self.max_path_length = max_path_length
+        self.step_type = step_type
         self.parent = parent
-        self.edge_to_update = edge_to_update
+        self.edge = edge
         self.allow_residual = allow_residual
 
-    def simple_next_node(self, destination: Vertex):
+    def simple_next_node(self, edge: Edge):
         """
         Simply create the next node like in BFS
 
-        :param destination: vertex to be added to the path
+        :param edge: Edge used to extend the current path
         :return: Node
         """
         node = Node.__new__(Node)
-        node.vertex = destination
+        node.vertex = edge.destination
         node.path_length = self.path_length + 1
         node.max_path_length = self.max_path_length
+        node.step_type = StepType.NORMAL
         node.parent = self
-        node.edge_to_update = None
+        node.edge = edge
         node.allow_residual = False
         return node
 
@@ -113,36 +123,29 @@ class Node:
         node.vertex = self.vertex
         node.path_length = self.path_length
         node.max_path_length = max(self.max_path_length, self.path_length + 1 + edge.path_meta.post)
+        node.step_type = StepType.REPLACE
         node.parent = self
-        node.edge_to_update = edge
+        node.edge = edge
         node.allow_residual = True
         return node
 
-    def backward_node(self, vertex: Vertex):
+    def backward_node(self, edge: Edge):
         """
         Node created by going backward through residual connection
 
-        :param vertex: source vertex of the residual edge
+        :param edge: residual edge to follow
         :return: Node
         """
 
         node = Node.__new__(Node)
-        node.vertex = vertex
+        node.vertex = edge.source
         node.path_length = self.path_length - 1
         node.max_path_length = self.max_path_length
+        node.step_type = StepType.BACKWARD
         node.parent = self
-        node.edge_to_update = None
+        node.edge = edge
         node.allow_residual = True
         return node
-
-    def from_normal_edge(self, edge: Edge):
-        if edge.available_flow() > 0:
-            return self.simple_next_node(edge.destination)
-        else:
-            return self.replacing_node(edge)
-
-    def from_residual_edge(self, edge: Edge):
-        return self.backward_node(edge.source)
 
     def __lt__(self, other):
         return max(self.max_path_length, self.path_length) < max(other.max_path_length, other.path_length)
@@ -165,23 +168,20 @@ def apply_path(node: Node):
     current = node
     post = 0
     while current.parent is not None:
-        print(current, current.edge_to_update)
+        print(current, current.edge)
 
-        if current.edge_to_update is None:
-            used_residual_connection = current.path_length == current.parent.path_length - 1
-            if used_residual_connection:
-                # we remove path from the residual connection we used (it's no longer residual)
-                edge = [e for e in current.vertex.edges if e.destination is current.parent.vertex][0]
-                edge.path_meta = None
-                post = -1  # just for assertion
-            else:
-                assert post >= 0  # this branch can not execute after residual update
-                # we annotate the edge with the new path information
-                edge = [e for e in current.vertex.edges if e.source is current.parent.vertex][0]
-                edge.path_meta = PathMeta(current.path_length - 1, post)
+        if current.step_type == StepType.NORMAL:
+            # we annotate the edge with the new path information
+            assert post >= 0  # this branch can not execute after residual update
+            current.edge.path_meta = PathMeta(current.path_length - 1, post)
+        elif current.step_type == StepType.BACKWARD:
+            # we remove path from the residual connection we used (it's no longer residual)
+            current.edge.path_meta = None
+            post = -1  # just for assertion
         else:
+            # we have to recursively go to the sink and update the edges
             path_length = current.parent.path_length
-            edge = current.edge_to_update
+            edge = current.edge
             post = edge.path_meta.post
             while edge is not None:
                 print(edge, end=' | ')
@@ -198,7 +198,7 @@ def apply_path(node: Node):
 def iterate(graph: Graph):
     source = graph.vertices[graph.source_id]
     sink = graph.vertices[graph.sink_id]
-    initial_node = Node(source, 0, 0)
+    initial_node = Node(source, 0, 0, StepType.NORMAL)
 
     q = PriorityQueue()
     q.put(initial_node)
@@ -217,7 +217,7 @@ def iterate(graph: Graph):
             assert isinstance(e, Edge)
             if e.source is current.vertex:  # edge is starting at the current vertex
                 if e.available_flow() > 0:  # the edge is free
-                    node = current.simple_next_node(e.destination)
+                    node = current.simple_next_node(e)
                     q.put(node)
                 else:  # the edge is already used by another path
                     not_source = current.vertex is not source  # pointless to go all way back to the source
@@ -237,9 +237,14 @@ def iterate(graph: Graph):
                     same_path = False
                 not_to_source = e.source is not source  # don't go back to the source
                 if current.allow_residual and same_path and not_to_source:
-                    q.put(current.backward_node(e.source))
+                    q.put(current.backward_node(e))
+        current = None
 
-    apply_path(current)
+    if current is not None:
+        apply_path(current)
+        return True
+    else:
+        return False
 
 
 def main():
@@ -247,6 +252,7 @@ def main():
     g = Graph()
 
     # this should be read from file
+    # note that node 7 was replaced with 10 and additional connection 6-8-9-10 has been added to the original example
     edges = [
         (0, 1),
         (0, 3),
@@ -260,7 +266,7 @@ def main():
         (5, 6),
         (6, 10),
 
-        (6, 8),
+        (6, 8),  # additional connection
         (8, 9),
         (9, 10)
     ]
@@ -278,11 +284,17 @@ def main():
     g.add_path_meta(3, 6, PathMeta(1, 1))
     g.add_path_meta(6, 10, PathMeta(2, 0))
 
-    iterate(g)
-
-    print()
-
-    print(g.edges)
+    found_path = True
+    iteration_number = 0
+    while found_path:
+        print("ITERATION", iteration_number)
+        found_path = iterate(g)
+        print()
+        print("Edges after iteration:")
+        print(g.edges)
+        print()
+        print()
+        iteration_number += 1
 
 
 if __name__ == "__main__":
