@@ -40,6 +40,9 @@ class Edge:
         else:
             return 0
 
+    def is_valid_continuation_of(self, edge: 'Edge'):
+        return self.path_meta.pre == edge.path_meta.pre + 1
+
     def __repr__(self):
         return '{}-{}: {}'.format(self.source, self.destination, self.path_meta)
 
@@ -260,6 +263,33 @@ def iterate(graph: Graph):
         return False
 
 
+def get_paths(graph: Graph):
+    source = graph.vertices[graph.source_id]
+    paths = []
+    used_edges = set()
+
+    for se in source.edges:
+        if se.source == source:
+            path = [se]
+            while path[-1].destination.id != graph.sink_id:
+                last_edge = path[-1]
+                last_vertex = path[-1].destination
+                for e in last_vertex.edges:
+                    if (e.source == last_vertex
+                            and e.is_valid_continuation_of(last_edge)
+                            and e not in used_edges):
+                        path.append(e)
+                        used_edges.add(e)
+                        break
+            paths.append(path)
+
+    return paths
+
+
+def edge_seq_to_vertex_seq(seq: list):
+    return [seq[0].source] + [e.destination for e in seq]
+
+
 def main():
     target_flow = 3
     g = Graph()
@@ -327,6 +357,11 @@ def main():
         print()
         print()
         iteration_number += 1
+
+    paths = get_paths(g)
+    print("Found paths:")
+    for p in paths:
+        print(edge_seq_to_vertex_seq(p))
 
 
 if __name__ == "__main__":

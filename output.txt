@@ -1,9 +1,8 @@
 ITERATION 0
 node(V0, 0, 0, False) : []
-node(V2, 1, 0, False) : [node(V1, 1, 0, False)]
-node(V1, 1, 0, False) : [node(V3, 2, 0, False), node(V4, 2, 0, False)]
-node(V3, 2, 0, False) : [node(V4, 2, 0, False)]
-node(V4, 2, 0, False) : []
+node(V1, 1, 0, False) : [node(V2, 1, 0, False)]
+node(V2, 1, 0, False) : []
+node(V4, 2, 0, False) : [node(V3, 2, 0, False)]
 FOUND THE PATH
 node(V4, 2, 0, False) V2-V4: None
 node(V2, 1, 0, False) V0-V2: None
@@ -16,8 +15,8 @@ ITERATION 1
 node(V0, 0, 0, False) : []
 node(V1, 1, 0, False) : []
 node(V2, 2, 0, False) : []
-node(V3, 3, 0, False) : [node(V2, 1, 3, True)]
-node(V2, 1, 3, True) : [node(V4, 4, 0, False)]
+node(V2, 1, 3, True) : [node(V3, 3, 0, False)]
+node(V3, 3, 0, False) : [node(V3, 2, 3, False)]
 node(V3, 2, 3, False) : [node(V4, 4, 0, False)]
 node(V4, 3, 3, False) : [node(V4, 4, 0, False)]
 FOUND THE PATH
@@ -37,3 +36,8 @@ node(V0, 0, 0, False) : []
 
 Edges after iteration:
 [V0-V1: meta(0, 2), V1-V2: meta(1, 1), V2-V3: meta(1, 1), V3-V4: meta(2, 0), V0-V2: meta(0, 1), V2-V4: meta(2, 0)]
+
+
+Found paths:
+[V0, V1, V2, V4]
+[V0, V2, V3, V4]
