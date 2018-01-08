@@ -1,56 +1,39 @@
 ITERATION 0
 node(V0, 0, 0, False) : []
-node(V5, 1, 0, False) : [node(V7, 1, 0, False)]
-node(V7, 1, 0, False) : [node(V6, 2, 0, False)]
-node(V6, 2, 0, False) : []
-node(V6, 2, 3, True) : [node(V8, 3, 0, False)]
-node(V8, 3, 0, False) : [node(V3, 1, 3, True)]
-node(V3, 1, 3, True) : [node(V9, 4, 0, False)]
-node(V4, 2, 3, False) : [node(V9, 4, 0, False)]
-node(V4, 2, 3, True) : [node(V9, 4, 0, False)]
-node(V1, 1, 3, True) : [node(V9, 4, 0, False)]
-node(V2, 2, 3, False) : [node(V9, 4, 0, False)]
-node(V10, 3, 3, False) : [node(V9, 4, 0, False)]
+node(V2, 1, 0, False) : [node(V1, 1, 0, False)]
+node(V1, 1, 0, False) : [node(V3, 2, 0, False), node(V4, 2, 0, False)]
+node(V3, 2, 0, False) : [node(V4, 2, 0, False)]
+node(V4, 2, 0, False) : []
 FOUND THE PATH
-node(V10, 3, 3, False) V2-V10: None
-node(V2, 2, 3, False) V1-V2: None
-node(V1, 1, 3, True) V1-V4: meta(1, 1)
-node(V4, 2, 3, True) V4-V10: meta(2, 0)
-V4-V10: meta(2, 0) | 
-node(V4, 2, 3, False) V3-V4: None
-node(V3, 1, 3, True) V3-V6: meta(1, 1)
-node(V6, 2, 3, True) V6-V10: meta(2, 0)
-V6-V10: meta(2, 0) | 
-node(V6, 2, 0, False) V5-V6: None
-node(V5, 1, 0, False) V0-V5: None
+node(V4, 2, 0, False) V2-V4: None
+node(V2, 1, 0, False) V0-V2: None
 
 Edges after iteration:
-[V0-V1: meta(0, 2), V0-V3: meta(0, 2), V0-V5: meta(0, 2), V1-V2: meta(1, 1), V1-V4: None, V2-V10: meta(2, 0), V3-V4: meta(1, 1), V3-V6: None, V4-V10: meta(2, 0), V5-V6: meta(1, 1), V6-V10: meta(2, 0), V6-V8: None, V8-V9: None, V9-V10: None, V0-V7: None, V7-V6: None]
+[V0-V1: None, V1-V2: None, V2-V3: None, V3-V4: None, V0-V2: meta(0, 1), V2-V4: meta(1, 0)]
 
 
 ITERATION 1
 node(V0, 0, 0, False) : []
-node(V7, 1, 0, False) : []
-node(V6, 2, 0, False) : []
-node(V6, 2, 3, True) : [node(V8, 3, 0, False)]
-node(V8, 3, 0, False) : [node(V5, 1, 3, True)]
-node(V5, 1, 3, True) : [node(V9, 4, 0, False)]
-node(V9, 4, 0, False) : []
-node(V10, 5, 0, False) : []
+node(V1, 1, 0, False) : []
+node(V2, 2, 0, False) : []
+node(V3, 3, 0, False) : [node(V2, 1, 3, True)]
+node(V2, 1, 3, True) : [node(V4, 4, 0, False)]
+node(V3, 2, 3, False) : [node(V4, 4, 0, False)]
+node(V4, 3, 3, False) : [node(V4, 4, 0, False)]
 FOUND THE PATH
-node(V10, 5, 0, False) V9-V10: None
-node(V9, 4, 0, False) V8-V9: None
-node(V8, 3, 0, False) V6-V8: None
-node(V6, 2, 0, False) V7-V6: None
-node(V7, 1, 0, False) V0-V7: None
+node(V4, 3, 3, False) V3-V4: None
+node(V3, 2, 3, False) V2-V3: None
+node(V2, 1, 3, True) V2-V4: meta(1, 0)
+V2-V4: meta(1, 0) |
+node(V2, 2, 0, False) V1-V2: None
+node(V1, 1, 0, False) V0-V1: None
 
 Edges after iteration:
-[V0-V1: meta(0, 2), V0-V3: meta(0, 2), V0-V5: meta(0, 2), V1-V2: meta(1, 1), V1-V4: None, V2-V10: meta(2, 0), V3-V4: meta(1, 1), V3-V6: None, V4-V10: meta(2, 0), V5-V6: meta(1, 1), V6-V10: meta(2, 0), V6-V8: meta(2, 2), V8-V9: meta(3, 1), V9-V10: meta(4, 0), V0-V7: meta(0, 4), V7-V6: meta(1, 3)]
+[V0-V1: meta(0, 2), V1-V2: meta(1, 1), V2-V3: meta(1, 1), V3-V4: meta(2, 0), V0-V2: meta(0, 1), V2-V4: meta(2, 0)]
 
 
 ITERATION 2
 node(V0, 0, 0, False) : []
 
 Edges after iteration:
-[V0-V1: meta(0, 2), V0-V3: meta(0, 2), V0-V5: meta(0, 2), V1-V2: meta(1, 1), V1-V4: None, V2-V10: meta(2, 0), V3-V4: meta(1, 1), V3-V6: None, V4-V10: meta(2, 0), V5-V6: meta(1, 1), V6-V10: meta(2, 0), V6-V8: meta(2, 2), V8-V9: meta(3, 1), V9-V10: meta(4, 0), V0-V7: meta(0, 4), V7-V6: meta(1, 3)]
-
+[V0-V1: meta(0, 2), V1-V2: meta(1, 1), V2-V3: meta(1, 1), V3-V4: meta(2, 0), V0-V2: meta(0, 1), V2-V4: meta(2, 0)]

@@ -121,7 +121,7 @@ class Node:
         """
         node = Node.__new__(Node)
         node.vertex = self.vertex
-        node.path_length = self.path_length
+        node.path_length = edge.path_meta.pre
         node.max_path_length = max(self.max_path_length, self.path_length + 1 + edge.path_meta.post)
         node.step_type = StepType.REPLACE
         node.parent = self
@@ -204,6 +204,7 @@ def iterate(graph: Graph):
     q.put(initial_node)
 
     best_by_vertex = {}  # helper dict to avoid pushing redundant nodes
+
     def push(node: Node):
         key = (node.vertex.id, node.allow_residual)
         if key not in best_by_vertex:
@@ -211,7 +212,7 @@ def iterate(graph: Graph):
         current_best = best_by_vertex[key]
 
         node_score = max(node.path_length, node.max_path_length)
-        if current_best > node_score:
+        if current_best >= node_score:
             q.put(node)
             best_by_vertex[key] = node_score
 
@@ -265,6 +266,8 @@ def main():
 
     # this should be read from file
     # note that node 7 was replaced with 10 and additional connection 6-8-9-10 has been added to the original example
+    """
+    # First graph
     edges = [
         (0, 1),
         (0, 3),
@@ -285,12 +288,25 @@ def main():
         (0, 7),  # bonus connection to check redundant nodes elimination
         (7, 6)
     ]
+    """
+
+    # Second graph
+    edges = [
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 4),
+        (0, 2),
+        (2, 4)
+    ]
 
     # build graph from input
     for e in edges:
         g.add_edge(*e)
 
     # add some paths manually to recreate the scenario from the docs
+    """
+    # For first graph
     g.add_path_meta(0, 1, PathMeta(0, 2))
     g.add_path_meta(1, 4, PathMeta(1, 1))
     g.add_path_meta(4, 10, PathMeta(2, 0))
@@ -298,6 +314,7 @@ def main():
     g.add_path_meta(0, 3, PathMeta(0, 2))
     g.add_path_meta(3, 6, PathMeta(1, 1))
     g.add_path_meta(6, 10, PathMeta(2, 0))
+    """
 
     found_path = True
     iteration_number = 0
