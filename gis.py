@@ -41,6 +41,10 @@ class Edge:
             return 0
 
     def is_valid_continuation_of(self, edge: 'Edge'):
+        if self.path_meta is None:
+            return False
+        if edge.path_meta is None:
+            return False
         return self.path_meta.pre == edge.path_meta.pre + 1
 
     def __repr__(self):
@@ -274,14 +278,19 @@ def get_paths(graph: Graph):
             while path[-1].destination.id != graph.sink_id:
                 last_edge = path[-1]
                 last_vertex = path[-1].destination
+                accepted_any_edge = False
                 for e in last_vertex.edges:
                     if (e.source == last_vertex
                             and e.is_valid_continuation_of(last_edge)
                             and e not in used_edges):
                         path.append(e)
                         used_edges.add(e)
+                        accepted_any_edge = True
                         break
-            paths.append(path)
+                if not accepted_any_edge:
+                    break
+            if path[-1].destination.id == graph.sink_id:
+                paths.append(path)
 
     return paths
 
@@ -296,7 +305,6 @@ def main():
 
     # this should be read from file
     # note that node 7 was replaced with 10 and additional connection 6-8-9-10 has been added to the original example
-    """
     # First graph
     edges = [
         (0, 1),
@@ -318,8 +326,8 @@ def main():
         (0, 7),  # bonus connection to check redundant nodes elimination
         (7, 6)
     ]
-    """
 
+    """
     # Second graph
     edges = [
         (0, 1),
@@ -329,13 +337,13 @@ def main():
         (0, 2),
         (2, 4)
     ]
+    """
 
     # build graph from input
     for e in edges:
         g.add_edge(*e)
 
     # add some paths manually to recreate the scenario from the docs
-    """
     # For first graph
     g.add_path_meta(0, 1, PathMeta(0, 2))
     g.add_path_meta(1, 4, PathMeta(1, 1))
@@ -344,19 +352,22 @@ def main():
     g.add_path_meta(0, 3, PathMeta(0, 2))
     g.add_path_meta(3, 6, PathMeta(1, 1))
     g.add_path_meta(6, 10, PathMeta(2, 0))
-    """
 
     found_path = True
-    iteration_number = 0
-    while found_path:
-        print("ITERATION", iteration_number)
+    current_flow = 0
+
+    # Two paths are already hardcoded
+    current_flow += 2
+
+    while found_path and current_flow < target_flow:
+        print("ITERATION", current_flow)
         found_path = iterate(g)
         print()
         print("Edges after iteration:")
         print(g.edges)
         print()
         print()
-        iteration_number += 1
+        current_flow += 1
 
     paths = get_paths(g)
     print("Found paths:")
